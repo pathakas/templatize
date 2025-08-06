@@ -1,0 +1,62 @@
+name: Terraform Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      organization:
+        description: 'Organization name'
+        required: true
+        default: 'McCainFoods'
+      repo_visibility:
+        description: 'Repo visibility'
+        required: false
+        default: 'private'
+      foundation_repo:
+        description: 'Foundation repo name'
+        required: false
+        default: 'mf-dt-azrabc-sampleapp-foundation-repo'
+      infra_repo:
+        description: 'Infra repo name'
+        required: false
+        default: 'mf-dt-azrabc-sampleapp-infra-repo'
+      app_repo:
+        description: 'App repo name'
+        required: false
+        default: 'mf-dt-azrabc-sampleapp-app-repo'
+      # Add more as needed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Use workflow input, fallback to secrets/defaults if missing
+      FOUNDATION_REPO: ${{ github.event.inputs.foundation_repo || 'mf-dt-azrabc-sampleapp-foundation-repo' }}
+      INFRA_REPO: ${{ github.event.inputs.infra_repo || 'mf-dt-azrabc-sampleapp-infra-repo' }}
+      APP_REPO: ${{ github.event.inputs.app_repo || 'mf-dt-azrabc-sampleapp-app-repo' }}
+      GITHUB_ORGANIZATION: ${{ github.event.inputs.organization || 'McCainFoods' }}
+      REPO_VISIBILITY: ${{ github.event.inputs.repo_visibility || 'private' }}
+
+      # ... (other secrets and envs as above)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: (Optional) Load extra config from input.json
+        run: |
+          if [ -f input.json ]; then
+            echo "input.json present"
+          else
+            echo '{}' > input.json
+          fi
+
+      - name: Generate terraform.tfvars from template, env, and input.json
+        run: python generate_tfvars.py
+
+      - name: Display generated tfvars (debug)
+        run: cat terraform.tfvars
