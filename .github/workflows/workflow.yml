@@ -3,26 +3,30 @@ name: Terraform Pipeline
 on:
   workflow_dispatch:
     inputs:
-      organization:
-        description: 'Organization name'
+      organization_code:
+        description: 'Organization Code'
         required: true
-        default: 'McCainFoods'
-      repo_visibility:
-        description: 'Repo visibility'
-        required: false
-        default: 'private'
-      foundation_repo:
-        description: 'Foundation repo name'
-        required: false
-        default: 'mf-dt-azrabc-sampleapp-foundation-repo'
-      infra_repo:
+        default: 'mf'
+      lob_code:
+        description: 'lob Code'
+        required: true
+        default: 'daia'
+      app_code:
+        description: 'Application Code'
+        required: true
+        default: 'azraaa'
+      application_name:
         description: 'Infra repo name'
-        required: false
+        required: true
         default: 'mf-dt-azrabc-sampleapp-infra-repo'
-      app_repo:
-        description: 'App repo name'
-        required: false
+      application_platform:
+        description: 'Application Platform'
+        required: true
         default: 'mf-dt-azrabc-sampleapp-app-repo'
+      environments:
+        description: "Environments JSON"
+        required: true
+        default: '[{"name":"Development","code":"dev","subscription_id":""},{"name":"QA","code":"qat","subscription_id":""}]'
       # Add more as needed
 
 jobs:
@@ -56,7 +60,7 @@ jobs:
           fi
 
       - name: Generate terraform.tfvars from template, env, and input.json
-        run: python templatize.py
+        run: python generate_tfvars.py
 
       - name: Display generated tfvars (debug)
         run: cat terraform.tfvars
