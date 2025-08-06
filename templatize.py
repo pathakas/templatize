@@ -1,50 +1,42 @@
 #!/usr/bin/env python3
 import os
 import sys
-import json
 import re
 
-def load_input(input_file="input.json"):
-    """
-    Load onboarding parameters from JSON file, searching cwd or script directory.
-    """
-    # Try current directory
-    if os.path.isfile(input_file):
-        path = input_file
-    else:
-        # Try script directory
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        alt = os.path.join(script_dir, input_file)
-        if os.path.isfile(alt):
-            path = alt
-        else:
-            sys.stderr.write(f"ERROR: input file '{input_file}' not found in cwd or script directory.\n")
-            sys.exit(1)
+REQUIRED_VARS = [
+    "ORGANIZATION_CODE",
+    "LOB_CODE",
+    "APP_CODE",
+    "APPLICATION_NAME",
+    # add more if needed...
+]
 
-    with open(path) as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError as e:
-            sys.stderr.write(f"ERROR: failed to parse JSON '{path}': {e}\n")
-            sys.exit(1)
-
-
-def build_context(data):
+def build_context():
     """
-    Build a flat context dict from input JSON and derive repo names.
+    Build a flat context dict from environment variables and derive repo names.
     """
     ctx = {}
-    # Copy scalar values from JSON, uppercased
-    for k, v in data.items():
-        if isinstance(v, (str, int, float, bool)):
-            ctx[k.upper()] = v
+    # Populate from environment
+    for key in REQUIRED_VARS:
+        value = os.environ.get(key)
+        if not value:
+            sys.stderr.write(f"ERROR: Required environment variable '{key}' not set.\n")
+            sys.exit(1)
+        ctx[key] = value
+
     # Derived repo names
-    base = f"{data['organization_code']}-{data['lob_code']}-{data['app_code']}-{data['application_name']}"
+    base = f"{ctx['ORGANIZATION_CODE']}-{ctx['LOB_CODE']}-{ctx['APP_CODE']}-{ctx['APPLICATION_NAME']}"
     ctx['FOUNDATION_REPO'] = f"{base}-foundation-repo"
     ctx['INFRA_REPO']      = f"{base}-infra-repo"
     ctx['APP_REPO']        = f"{base}-app-repo"
-    ctx['REPO_VISIBILITY'] = f"private"
-    ctx['GITHUB_ORGANIZATION'] = f"pathakas"
+    ctx['REPO_VISIBILITY'] = os.environ.get("REPO_VISIBILITY", "private")
+    ctx['GITHUB_ORGANIZATION'] = os.environ.get("GITHUB_ORGANIZATION", "pathakas")
+    # Add other context/env values as needed
+
+    # Merge in ALL environment variables (for other templated secrets)
+    for k, v in os.environ.items():
+        ctx[k] = v
+
     return ctx
 
 
@@ -61,9 +53,7 @@ def render_template(template_path, output_path, context):
     # Replacement function
     def repl(m):
         key = m.group(1)
-        if key in context:
-            return str(context[key])
-        return os.environ.get(key, m.group(0))
+        return str(context.get(key, m.group(0)))
 
     rendered = re.sub(r"\$\{(\w+)\}", repl, content)
 
@@ -78,14 +68,7 @@ def render_template(template_path, output_path, context):
 
 
 def main():
-    # Usage: render_tfvars.py [input.json]
-    input_file = sys.argv[1] if len(sys.argv) > 1 else 'input.json'
-    data = load_input(input_file)
-    context = build_context(data)
-    # Merge in environment variables (so placeholders can come from GH secrets, etc.)
-    for k, v in os.environ.items():
-        context[k] = v
-
+    context = build_context()
     tpl = 'terraform.tfvars.tpl'
     out = 'terraform.tfvars'
     render_template(tpl, out, context)
