@@ -26,7 +26,7 @@ def build_context():
         ctx[key] = value
 
     # Derived repo names
-    base = f"{ctx['ORGANIZATION_CODE']}-{ctx['LOB_CODE']}-{ctx['APP_CODE']}-{ctx['APPLICATION_NAME']}"
+    base = f"{ctx['ORGANIZATION_CODE']}-{ctx['LOB_CODE']}-{ctx['APP_CODE']}-{ctx['APP_NAME']}"
     ctx['FOUNDATION_REPO'] = f"{base}-foundation-repo"
     ctx['INFRA_REPO']      = f"{base}-infra-repo"
     ctx['APP_REPO']        = f"{base}-app-repo"
