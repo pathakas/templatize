@@ -7,8 +7,9 @@ REQUIRED_VARS = [
     "ORGANIZATION_CODE",
     "LOB_CODE",
     "APP_CODE",
-    "APPLICATION_NAME",
-    # add more if needed...
+    "APP_NAME",
+    "APP_PLATFORM",
+    "APP_ENVT",
 ]
 
 def build_context():
