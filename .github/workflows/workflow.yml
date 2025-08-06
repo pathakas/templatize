@@ -61,7 +61,7 @@ jobs:
           fi
 
       - name: Generate terraform.tfvars from template, env, and input.json
-        run: python generate_tfvars.py
+        run: python templatize.py
 
       - name: Display generated tfvars (debug)
         run: cat terraform.tfvars
