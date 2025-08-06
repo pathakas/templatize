@@ -16,13 +16,13 @@ on:
         required: true
         default: 'azraaa'
       application_name:
-        description: 'Infra repo name'
+        description: 'Application Name'
         required: true
-        default: 'mf-dt-azrabc-sampleapp-infra-repo'
+        default: 'sampleapp'
       application_platform:
         description: 'Application Platform'
         required: true
-        default: 'mf-dt-azrabc-sampleapp-app-repo'
+        default: 'reactjs'
       environments:
         description: "Environments JSON"
         required: true
@@ -34,11 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Use workflow input, fallback to secrets/defaults if missing
-      FOUNDATION_REPO: ${{ github.event.inputs.foundation_repo || 'mf-dt-azrabc-sampleapp-foundation-repo' }}
-      INFRA_REPO: ${{ github.event.inputs.infra_repo || 'mf-dt-azrabc-sampleapp-infra-repo' }}
-      APP_REPO: ${{ github.event.inputs.app_repo || 'mf-dt-azrabc-sampleapp-app-repo' }}
-      GITHUB_ORGANIZATION: ${{ github.event.inputs.organization || 'McCainFoods' }}
-      REPO_VISIBILITY: ${{ github.event.inputs.repo_visibility || 'private' }}
+      ORGANIZATION_CODE: ${{ github.event.inputs.organization_code }}
+      LOB_CODE: ${{ github.event.inputs.lob_code }}
+      APP_CODE: ${{ github.event.inputs.app_code }}
+      APP_NAME: ${{ github.event.inputs.application_name }}
+      APP_PLATFORM: ${{ github.event.inputs.application_platform }}
+      APP_ENVT: ${{ github.event.inputs.environments }}
 
       # ... (other secrets and envs as above)
 
